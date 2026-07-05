@@ -16,7 +16,8 @@
             <span>邮箱</span>
             <input
               v-model="email"
-              type="email"
+              type="text"
+              inputmode="email"
               placeholder="your@email.com"
               autocomplete="email"
             />

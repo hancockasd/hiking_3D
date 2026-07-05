@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration
+# pages_build_output_dir tells Cloudflare this is a Pages project, not a Worker
+name = "hiking-3d"
+compatibility_date = "2026-07-05"
+pages_build_output_dir = "dist"
+
+# D1 database binding — auto-applied to Functions
+[[d1_databases]]
+binding = "DB"
+database_name = "hiking-db"
+database_id = "28eb9efc-bb96-4051-b5bd-401cdbf56ff5"

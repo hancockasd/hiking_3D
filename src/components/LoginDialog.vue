@@ -45,6 +45,16 @@
             />
           </label>
 
+          <!-- Avatar upload (register only) -->
+          <div v-if="isRegister" class="field">
+            <span>头像（可选）</span>
+            <div class="avatar-upload" @click="avatarInput?.click()">
+              <img v-if="avatarPreview" :src="avatarPreview" class="avatar-preview" />
+              <span v-else class="avatar-placeholder">点击上传头像</span>
+              <input ref="avatarInput" type="file" accept="image/*" style="display:none" @change="onAvatarChange" />
+            </div>
+          </div>
+
           <button type="submit" class="btn-primary" :disabled="loading">
             {{ loading ? '处理中…' : isRegister ? '注册' : '登录' }}
           </button>
@@ -80,10 +90,22 @@ const error = ref('')
 const email = ref('')
 const username = ref('')
 const password = ref('')
+const avatarPreview = ref('')
+const avatarInput = ref<HTMLInputElement>()
 
 function toggleMode() {
   isRegister.value = !isRegister.value
   error.value = ''
+}
+
+function onAvatarChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    avatarPreview.value = ev.target?.result as string
+  }
+  reader.readAsDataURL(file)
 }
 
 async function submit() {
@@ -108,6 +130,9 @@ async function submit() {
       : await login(email.value, password.value)
 
     if (ok) {
+      if (isRegister.value && avatarPreview.value) {
+        localStorage.setItem('user_avatar', avatarPreview.value)
+      }
       close()
     }
   } catch (e: any) {
@@ -123,6 +148,7 @@ function close() {
   email.value = ''
   username.value = ''
   password.value = ''
+  avatarPreview.value = ''
   isRegister.value = false
 }
 </script>
@@ -131,7 +157,7 @@ function close() {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,35 +166,38 @@ function close() {
 
 .dialog {
   position: relative;
-  background: #1f2937;
-  border-radius: 12px;
-  padding: 28px 24px 20px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px 24px 22px;
   width: 380px;
   max-width: 95vw;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: var(--shadow-sm);
 }
 
 h2 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #f9fafb;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
   margin: 0;
 }
 
 .hint {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 13px;
+  color: var(--ink3);
   line-height: 1.5;
   margin: 0;
 }
 
 .err-msg {
-  font-size: 12px;
-  color: #f87171;
-  background: #7f1d1d30;
-  border-radius: 6px;
+  font-size: 13px;
+  color: var(--danger);
+  background: var(--danger-lt);
+  border: 1px solid #fecaca;
+  border-radius: var(--r);
   padding: 8px 10px;
   margin: 0;
 }
@@ -185,72 +214,90 @@ form {
   gap: 4px;
 }
 .field span {
-  font-size: 12px;
-  font-weight: 600;
-  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink2);
 }
 .field input {
-  background: #111827;
-  border: 1px solid #374151;
-  border-radius: 6px;
-  color: #f9fafb;
-  padding: 9px 12px;
-  font-size: 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--ink);
+  padding: 8px 10px;
+  font-size: 13px;
   outline: none;
   transition: border-color 0.15s;
 }
-.field input:focus {
-  border-color: #3b82f6;
+.field input:focus { border-color: var(--blue); outline: 2px solid var(--blue-lt); }
+.field input::placeholder { color: var(--ink4); }
+
+.avatar-upload {
+  cursor: pointer;
+  border: 1px dashed var(--border2);
+  border-radius: var(--r);
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+  background: var(--bg);
+}
+.avatar-upload:hover { border-color: var(--blue); }
+.avatar-preview {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatar-placeholder {
+  font-size: 13px;
+  color: var(--ink3);
 }
 
 .btn-primary {
-  padding: 10px;
-  background: #3b82f6;
+  padding: 8px 16px;
+  background: var(--blue);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--r);
   color: white;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
   margin-top: 4px;
 }
-.btn-primary:hover {
-  background: #2563eb;
-}
+.btn-primary:hover { background: var(--blue2); }
 .btn-primary:disabled {
-  background: #1e3a5f;
-  color: #6b7280;
+  background: var(--border2);
+  color: var(--ink4);
   cursor: not-allowed;
 }
 
 .toggle {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 13px;
+  color: var(--ink3);
   text-align: center;
   margin: 0;
 }
 .toggle a {
-  color: #3b82f6;
+  color: var(--blue);
   text-decoration: none;
+  font-weight: 500;
 }
-.toggle a:hover {
-  text-decoration: underline;
-}
+.toggle a:hover { text-decoration: underline; }
 
 .close-btn {
   position: absolute;
-  top: 12px;
-  right: 14px;
+  top: 14px;
+  right: 16px;
   background: none;
   border: none;
-  color: #6b7280;
-  font-size: 20px;
+  color: var(--ink4);
+  font-size: 18px;
   cursor: pointer;
   line-height: 1;
   padding: 0;
+  transition: color 0.15s;
 }
-.close-btn:hover {
-  color: #f9fafb;
-}
+.close-btn:hover { color: var(--ink); }
 </style>

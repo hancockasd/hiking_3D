@@ -24,9 +24,9 @@ export async function onRequest(context: any): Promise<Response> {
 
     // Find user
     const user = await db
-      .prepare('SELECT id, email, username, password_hash FROM users WHERE email = ?')
+      .prepare('SELECT id, email, username, password_hash, avatar FROM users WHERE email = ?')
       .bind(email)
-      .first<{ id: string; email: string; username: string; password_hash: string }>()
+      .first<{ id: string; email: string; username: string; password_hash: string; avatar: string | null }>()
 
     if (!user) {
       return json({ ok: false, error: '邮箱未注册' })
@@ -48,7 +48,7 @@ export async function onRequest(context: any): Promise<Response> {
     return json({
       ok: true,
       token,
-      user: { id: user.id, email: user.email, username: user.username },
+      user: { id: user.id, email: user.email, username: user.username, avatar: user.avatar || undefined },
     })
   } catch (e: any) {
     return json({ ok: false, error: e.message || '登录失败' }, 500)

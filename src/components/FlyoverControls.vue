@@ -55,30 +55,34 @@ function onSpeed(e: Event) {
 .flyover-controls {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  background: #1f2937;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sb-border);
 }
 .btn-play {
-  padding: 8px 16px;
-  background: #3b82f6;
+  padding: 6px 14px;
+  background: var(--sb-blue);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--r);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s;
+  align-self: flex-start;
 }
-.btn-play:hover { background: #2563eb; }
+.btn-play:hover { background: #3a7ef0; }
 .progress-row, .speed-row {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--sb-ink3);
 }
-.progress-row input, .speed-row input { flex: 1; }
-.pct { min-width: 32px; text-align: right; }
-label { min-width: 28px; }
+.progress-row input, .speed-row input {
+  flex: 1;
+  accent-color: var(--sb-blue);
+}
+.pct { min-width: 32px; text-align: right; font-size: 12px; color: var(--sb-ink3); }
+label { min-width: 28px; font-size: 12px; }
 </style>

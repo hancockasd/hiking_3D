@@ -75,6 +75,17 @@
             </select>
           </div>
 
+          <!-- By distance -->
+          <div v-else-if="filterMode === 'distance'" class="filter-section filter-row">
+            <select v-model="selDistRange" @change="refreshFiltered">
+              <option value="">全部距离</option>
+              <option value="0-5">0–5 km</option>
+              <option value="5-15">5–15 km</option>
+              <option value="15-30">15–30 km</option>
+              <option value="30+">30+ km</option>
+            </select>
+          </div>
+
           <!-- Track list -->
           <div class="track-list">
             <div v-if="filtered.length === 0" class="empty">该范围内没有轨迹</div>
@@ -153,14 +164,18 @@ const filtered = ref<TrackMeta[]>([])
 const selectedFiles = ref<Set<string>>(new Set())
 const importProgress = ref('')
 
-type FilterMode = 'latest' | 'month' | 'week'
+type FilterMode = 'latest' | 'month' | 'week' | 'distance'
 const filterMode = ref<FilterMode>('latest')
 
 const FILTER_MODES = [
   { id: 'latest' as FilterMode, label: '最新一条' },
   { id: 'month' as FilterMode, label: '按年月' },
   { id: 'week' as FilterMode, label: '按周' },
+  { id: 'distance' as FilterMode, label: '按距离' },
 ]
+
+type DistRange = '' | '0-5' | '5-15' | '15-30' | '30+'
+const selDistRange = ref<DistRange>('')
 
 const availableYears = computed(() => getAvailableYears(allTracks.value))
 const availableMonths = computed(() => getAvailableMonths(allTracks.value, selYear.value ?? 0))
@@ -183,6 +198,7 @@ function reset() {
   filtered.value = []
   selectedFiles.value = new Set()
   filterMode.value = 'latest'
+  selDistRange.value = ''
   errorMsg.value = ''
 }
 
@@ -192,11 +208,19 @@ function refreshFiltered() {
     filtered.value = allTracks.value.slice(0, 1)
   } else if (filterMode.value === 'month') {
     filtered.value = filterByYearMonth(allTracks.value, selYear.value, selMonth.value)
-  } else {
+  } else if (filterMode.value === 'week') {
     filtered.value = filterByWeek(allTracks.value, selYear.value, selWeek.value)
+  } else {
+    filtered.value = allTracks.value.filter((t) => {
+      const km = t.distanceKm
+      if (selDistRange.value === '0-5') return km < 5
+      if (selDistRange.value === '5-15') return km >= 5 && km < 15
+      if (selDistRange.value === '15-30') return km >= 15 && km < 30
+      if (selDistRange.value === '30+') return km >= 30
+      return true
+    })
   }
-  // auto-select all in filtered list
-  filtered.value.forEach((t) => selectedFiles.value.add(t.filename))
+  // default: none selected (user picks what they want)
 }
 
 function onYearChange() {

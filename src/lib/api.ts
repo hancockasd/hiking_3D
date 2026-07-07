@@ -18,6 +18,7 @@ export interface LcUser {
   id: string
   email?: string
   username?: string
+  avatar?: string
 }
 
 export interface CloudTrackData {
@@ -56,8 +57,9 @@ async function request<T>(
     ...(options.headers as Record<string, string> || {}),
   }
 
-  // Attach auth token for non-auth endpoints
-  if (!url.includes('/api/auth/')) {
+  // Attach auth token to all endpoints except the ones that don't need it
+  const noAuthPaths = ['/api/auth/register', '/api/auth/login', '/api/auth/logout']
+  if (!noAuthPaths.some(p => url.includes(p))) {
     const token = getToken()
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
@@ -127,6 +129,17 @@ export async function apiLogout(): Promise<void> {
     // ignore
   }
   clearToken()
+}
+
+export async function apiMe(): Promise<{ ok: boolean; user?: LcUser; error?: string }> {
+  return request('/api/auth/me')
+}
+
+export async function apiUpdateAvatar(avatar: string): Promise<{ ok: boolean; error?: string }> {
+  return request('/api/auth/avatar', {
+    method: 'POST',
+    body: JSON.stringify({ avatar }),
+  })
 }
 
 export function isLoggedIn(): boolean {

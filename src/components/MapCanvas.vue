@@ -173,7 +173,14 @@ watch(() => store.activeBasemap, (newId) => {
 // even if the same id is set twice or reference equality tricks Vue's shallow watch
 watch(() => store.trackChangeSeq, () => {
   if (!map || !store.activeTrack) return
+
+  // Stop any running playback and remove the marker when switching tracks
+  flyoverEngine.pause()
+  removeHikerMarker()
   flyoverInitializedForTrackId = null
+  store.isFlyoverPlaying = false
+  store.flyoverProgress = 0
+
   if (map.loaded()) {
     addTrackLayers()
   } else {
@@ -186,8 +193,17 @@ let hikerMarker: maplibregl.Marker | null = null
 function createHikerMarker() {
   if (!map) return
   const el = document.createElement('div')
-  el.style.cssText = 'font-size:28px;line-height:1;user-select:none;pointer-events:none;'
-  el.textContent = '🧍'
+  const avatarSrc = localStorage.getItem('user_avatar')
+  if (avatarSrc) {
+    el.style.cssText = 'width:36px;height:36px;border-radius:50%;overflow:hidden;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.5);pointer-events:none;'
+    const img = document.createElement('img')
+    img.src = avatarSrc
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;'
+    el.appendChild(img)
+  } else {
+    el.style.cssText = 'font-size:28px;line-height:1;user-select:none;pointer-events:none;'
+    el.textContent = '🧍'
+  }
   hikerMarker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
     .setLngLat([0, 0])
     .addTo(map)
@@ -235,7 +251,7 @@ watch(() => store.isFlyoverPlaying, (playing) => {
     flyoverEngine.play()
   } else {
     flyoverEngine.pause()
-    removeHikerMarker()
+    // Keep marker visible at current position on pause
   }
 })
 

@@ -1,6 +1,6 @@
 <template>
   <div v-if="store.activeStats?.elevationProfile.length" class="elevation-chart">
-    <h3>海拔剖面</h3>
+    <h3>Elevation Profile</h3>
     <div ref="chartEl" />
   </div>
 </template>
@@ -36,14 +36,14 @@ async function buildChart() {
       legend: { show: false },
       scales: { x: { time: false } },
       axes: [
-        { label: 'km', labelSize: 12, font: '10px sans-serif', stroke: '#9ca3af', grid: { stroke: '#374151', width: 0.5 } },
-        { label: 'm', labelSize: 12, font: '10px sans-serif', stroke: '#9ca3af', grid: { stroke: '#374151', width: 0.5 } },
+        { label: 'km', labelSize: 12, font: '10px -apple-system, sans-serif', stroke: '#9ca3af', grid: { stroke: '#e5e5e5', width: 0.5 } },
+        { label: 'm', labelSize: 12, font: '10px -apple-system, sans-serif', stroke: '#9ca3af', grid: { stroke: '#e5e5e5', width: 0.5 } },
       ],
       series: [
         {},
         {
-          stroke: '#60a5fa',
-          fill: 'rgba(96,165,250,0.2)',
+          stroke: '#1558d6',
+          fill: 'rgba(21,88,214,0.08)',
           width: 1.5,
         },
       ],
@@ -66,16 +66,15 @@ onUnmounted(() => { uplot?.destroy() })
 
 <style scoped>
 .elevation-chart {
-  background: #1f2937;
-  border-radius: 8px;
-  padding: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sb-border);
 }
 h3 {
-  font-size: 13px;
-  font-weight: 700;
-  color: #f9fafb;
-  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sb-ink3);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
 }
 </style>

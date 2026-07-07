@@ -103,6 +103,7 @@ export async function syncFromCloud(
 ): Promise<number> {
   if (!isLoggedIn()) return (await localList()).length
 
+  // Fetch cloud state once
   const result = await apiListTracks()
   if (!result.ok || !result.data) {
     console.warn('云端轨迹列表加载失败:', result.error)
@@ -110,21 +111,45 @@ export async function syncFromCloud(
   }
 
   const cloudTracks = result.data
-  const localTracks = await localList()
-  const localIds = new Set(localTracks.map((t) => t.id))
+  const cloudIds = new Set(cloudTracks.map((t) => t.trackId))
+  const localSnapshot = await localList()
+  const localIds = new Set(localSnapshot.map((t) => t.id))
 
+  // Step 1: push local-only tracks up to cloud
+  const localOnly = localSnapshot.filter((t) => !cloudIds.has(t.id))
+  for (const t of localOnly) {
+    try {
+      await apiSaveTrack({
+        id: t.id,
+        name: t.name,
+        importedAt: t.importedAt,
+        workoutDate: t.workoutDate,
+        rawGpxText: t.rawGpxText,
+        stats: t.stats,
+      })
+    } catch (e) {
+      console.warn(`推送轨迹 "${t.name}" 到云端失败:`, e)
+    }
+  }
+
+  // Step 2: reconcile local — remove deleted, download missing
+  for (const local of localSnapshot) {
+    if (!cloudIds.has(local.id)) {
+      await localDelete(local.id)
+    }
+  }
+
+  // Step 3: download cloud tracks missing from local
   let synced = 0
   for (let i = 0; i < cloudTracks.length; i++) {
     const ct = cloudTracks[i]
     onProgress?.(i + 1, cloudTracks.length, ct.name)
 
-    // Skip if already in local (assume local is up-to-date)
     if (localIds.has(ct.trackId)) {
       synced++
       continue
     }
 
-    // Parse and save locally
     try {
       if (!ct.rawGpxText) continue
       const parsed = parseGpx(ct.rawGpxText)

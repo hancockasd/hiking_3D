@@ -55,9 +55,35 @@ function estimateDuration(xml: string): number {
 }
 
 function estimateDistanceKm(xml: string): number {
-  // quick pass: count trkpt and estimate by average spacing ~10m
-  const count = (xml.match(/<trkpt/g) || []).length
-  return Math.round((count * 10) / 1000 * 10) / 10
+  // Extract lat/lon from trkpt tags — handle either attribute order
+  const tagMatches = [...xml.matchAll(/<trkpt\s([^>]+)>/g)]
+  if (tagMatches.length < 2) return 0
+
+  const points: { lat: number; lon: number }[] = []
+  for (const m of tagMatches) {
+    const attrs = m[1]
+    const latM = attrs.match(/lat="([^"]+)"/)
+    const lonM = attrs.match(/lon="([^"]+)"/)
+    if (!latM || !lonM) continue
+    const lat = parseFloat(latM[1]), lon = parseFloat(lonM[1])
+    if (isFinite(lat) && isFinite(lon)) points.push({ lat, lon })
+  }
+
+  if (points.length < 2) return 0
+  const R = 6371
+  let dist = 0
+  for (let i = 1; i < points.length; i++) {
+    const { lat: lat1, lon: lon1 } = points[i - 1]
+    const { lat: lat2, lon: lon2 } = points[i]
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLon = ((lon2 - lon1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2
+    dist += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  }
+  return Math.round(dist * 10) / 10
 }
 
 export async function parseHealthZip(file: File): Promise<TrackMeta[]> {

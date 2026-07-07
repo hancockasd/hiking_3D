@@ -21,19 +21,20 @@ const store = useTrackStore()
 <style scoped>
 .basemap-switcher {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
+  padding: 12px 16px;
 }
 .btn {
   padding: 4px 10px;
-  border: 1px solid #374151;
-  border-radius: 16px;
-  background: #1f2937;
-  color: #9ca3af;
-  font-size: 11px;
+  border: 1px solid var(--sb-border);
+  background: transparent;
+  color: var(--sb-ink3);
+  font-size: 12px;
+  border-radius: var(--r);
   cursor: pointer;
   transition: all 0.15s;
 }
-.btn:hover { border-color: #60a5fa; color: #f9fafb; }
-.btn.active { border-color: #3b82f6; background: #1e40af; color: white; }
+.btn:hover { border-color: var(--sb-ink3); color: var(--sb-ink); }
+.btn.active { border-color: var(--sb-blue-bd); background: var(--sb-blue-lt); color: var(--sb-blue); }
 </style>
